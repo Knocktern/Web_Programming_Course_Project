@@ -1,4 +1,58 @@
 <?php
-require_once __DIR__ . '/../includes/bootstrap.php';$user=require_login('seeker');$jobId=(int)($_GET['job_id']??$_POST['job_id']??0);$pdo=database();$job=$pdo->prepare("SELECT id,title,minimum_passing_score FROM jobs WHERE id=? AND status='active'");$job->execute([$jobId]);$job=$job->fetch();if(!$job) exit('Quiz is unavailable.');
-if($_SERVER['REQUEST_METHOD']==='POST'){verify_csrf();$q=$pdo->prepare('SELECT id,correct_option,marks FROM quiz_questions WHERE job_id=?');$q->execute([$jobId]);$questions=$q->fetchAll();if(!$questions){flash('error','This job has no questions yet.');redirect('../public/job-details.php?id='.$jobId);}$total=0;$score=0;foreach($questions as $item){$total+=(float)$item['marks'];if(($_POST['answer'][$item['id']]??'')===$item['correct_option'])$score+=(float)$item['marks'];}$percentage=round($score/$total*100,2);$passed=$percentage >= (float)$job['minimum_passing_score'];$pdo->beginTransaction();$s=$pdo->prepare('INSERT INTO quiz_attempts(job_id,seeker_id,score,total_marks,percentage,passed) VALUES(?,?,?,?,?,?)');$s->execute([$jobId,$user['id'],$score,$total,$percentage,(int)$passed]);$attempt=(int)$pdo->lastInsertId();$a=$pdo->prepare('INSERT INTO quiz_answers(attempt_id,job_id,question_id,selected_option,is_correct,marks_awarded) VALUES(?,?,?,?,?,?)');foreach($questions as $item){$answer=$_POST['answer'][$item['id']]??null;$correct=$answer===$item['correct_option'];$a->execute([$attempt,$jobId,$item['id'],in_array($answer,['A','B','C','D'],true)?$answer:null,(int)$correct,$correct?$item['marks']:0]);}$pdo->commit();redirect('quiz-result.php?id='.$attempt);}
-$s=$pdo->prepare('SELECT id,question_text,option_a,option_b,option_c,option_d,marks FROM quiz_questions WHERE job_id=? ORDER BY display_order');$s->execute([$jobId]);$questions=$s->fetchAll();page_header('Preliminary quiz'); ?><h1><?=e($job['title'])?> quiz</h1><p class="lead">Pass score: <?=e($job['minimum_passing_score'])?>%. Your score is calculated securely after submission.</p><form method="post"><input type="hidden" name="csrf_token" value="<?=csrf_token()?>"><input type="hidden" name="job_id" value="<?=$jobId?>"><?php foreach($questions as $number=>$q):?><fieldset><legend><?=($number+1).'. '.e($q['question_text'])?> (<?=e($q['marks'])?> mark)</legend><?php foreach(['A'=>'option_a','B'=>'option_b','C'=>'option_c','D'=>'option_d'] as $letter=>$field):?><label><input type="radio" name="answer[<?=$q['id']?>]" value="<?=$letter?>" required> <?=$letter?>. <?=e($q[$field])?></label><?php endforeach;?></fieldset><br><?php endforeach;?><button>Submit quiz</button></form><?php page_footer(); ?>
+require_once __DIR__ . '/../includes/bootstrap.php';
+$user = require_login('seeker');
+$jobId = (int) ($_GET['job_id'] ?? $_POST['job_id'] ?? 0);
+$pdo = database();
+$job = $pdo->prepare("SELECT id,title,minimum_passing_score FROM jobs WHERE id=? AND status='active'");
+$job->execute([$jobId]);
+$job = $job->fetch();
+if (!$job)
+    exit('Quiz is unavailable.');
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+    $q = $pdo->prepare('SELECT id,correct_option,marks FROM quiz_questions WHERE job_id=?');
+    $q->execute([$jobId]);
+    $questions = $q->fetchAll();
+    if (!$questions) {
+        flash('error', 'This job has no questions yet.');
+        redirect('../public/job-details.php?id=' . $jobId);
+    }
+    $total = 0;
+    $score = 0;
+    foreach ($questions as $item) {
+        $total += (float) $item['marks'];
+        if (($_POST['answer'][$item['id']] ?? '') === $item['correct_option'])
+            $score += (float) $item['marks'];
+    }
+    $percentage = round($score / $total * 100, 2);
+    $passed = $percentage >= (float) $job['minimum_passing_score'];
+    $pdo->beginTransaction();
+    $s = $pdo->prepare('INSERT INTO quiz_attempts(job_id,seeker_id,score,total_marks,percentage,passed) VALUES(?,?,?,?,?,?)');
+    $s->execute([$jobId, $user['id'], $score, $total, $percentage, (int) $passed]);
+    $attempt = (int) $pdo->lastInsertId();
+    $a = $pdo->prepare('INSERT INTO quiz_answers(attempt_id,job_id,question_id,selected_option,is_correct,marks_awarded) VALUES(?,?,?,?,?,?)');
+    foreach ($questions as $item) {
+        $answer = $_POST['answer'][$item['id']] ?? null;
+        $correct = $answer === $item['correct_option'];
+        $a->execute([$attempt, $jobId, $item['id'], in_array($answer, ['A', 'B', 'C', 'D'], true) ? $answer : null, (int) $correct, $correct ? $item['marks'] : 0]);
+    }
+    $pdo->commit();
+    redirect('quiz-result.php?id=' . $attempt);
+}
+$s = $pdo->prepare('SELECT id,question_text,option_a,option_b,option_c,option_d,marks FROM quiz_questions WHERE job_id=? ORDER BY display_order');
+$s->execute([$jobId]);
+$questions = $s->fetchAll();
+page_header('Preliminary quiz'); ?>
+<h1><?= e($job['title']) ?> quiz</h1>
+<p class="lead">Pass score: <?= e($job['minimum_passing_score']) ?>%. Your score is calculated securely after
+    submission.
+</p>
+<form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden"
+        name="job_id" value="<?= $jobId ?>"><?php foreach ($questions as $number => $q): ?>
+        <fieldset>
+            <legend><?= ($number + 1) . '. ' . e($q['question_text']) ?> (<?= e($q['marks']) ?> mark)</legend>
+            <?php foreach (['A' => 'option_a', 'B' => 'option_b', 'C' => 'option_c', 'D' => 'option_d'] as $letter => $field): ?><label><input
+                        type="radio" name="answer[<?= $q['id'] ?>]" value="<?= $letter ?>" required> <?= $letter ?>.
+                    <?= e($q[$field]) ?></label><?php endforeach; ?>
+        </fieldset><br><?php endforeach; ?><button>Submit quiz</button>
+</form><?php page_footer(); ?>

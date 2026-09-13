@@ -1,3 +1,54 @@
-<?php require_once __DIR__ . '/../includes/bootstrap.php';$user=require_login('seeker');$pdo=database();$jobId=(int)($_GET['job_id']??$_POST['job_id']??0);
-if($_SERVER['REQUEST_METHOD']==='POST'){verify_csrf();$s=$pdo->prepare('SELECT id FROM quiz_attempts WHERE job_id=? AND seeker_id=? AND passed=1 ORDER BY attempted_at DESC LIMIT 1');$s->execute([$jobId,$user['id']]);$attempt=$s->fetchColumn();if(!$attempt){flash('error','A passing preliminary quiz result is required before applying.');redirect('../public/job-details.php?id='.$jobId);}try{$pdo->prepare('INSERT INTO applications(job_id,seeker_id,qualifying_attempt_id,cover_letter) VALUES(?,?,?,?)')->execute([$jobId,$user['id'],$attempt,posted('cover_letter')?:null]);flash('success','Application submitted.');}catch(PDOException $e){flash('error','You have already applied for this job.');}redirect('applications.php');}
-if($jobId){$s=$pdo->prepare("SELECT title FROM jobs WHERE id=? AND status='active'");$s->execute([$jobId]);$job=$s->fetch();if(!$job)exit('Job not found.');page_header('Apply');?><h1>Apply for <?=e($job['title'])?></h1><form method="post"><input type="hidden" name="csrf_token" value="<?=csrf_token()?>"><input type="hidden" name="job_id" value="<?=$jobId?>"><label>Cover letter</label><textarea name="cover_letter"></textarea><p><button>Submit application</button></p></form><?php page_footer();exit;}$s=$pdo->prepare('SELECT a.*,j.title,e.company_name FROM applications a JOIN jobs j ON j.id=a.job_id JOIN employers e ON e.user_id=j.employer_id WHERE a.seeker_id=? ORDER BY a.applied_at DESC');$s->execute([$user['id']]);page_header('My applications');?><h1>My applications</h1><table><tr><th>Role</th><th>Company</th><th>Status</th><th>Applied</th></tr><?php foreach($s as $a):?><tr><td><?=e($a['title'])?></td><td><?=e($a['company_name'])?></td><td><?=status_label($a['status'])?></td><td><?=e($a['applied_at'])?></td></tr><?php endforeach;?></table><?php page_footer(); ?>
+<?php require_once __DIR__ . '/../includes/bootstrap.php';
+$user = require_login('seeker');
+$pdo = database();
+$jobId = (int) ($_GET['job_id'] ?? $_POST['job_id'] ?? 0);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+    $s = $pdo->prepare('SELECT id FROM quiz_attempts WHERE job_id=? AND seeker_id=? AND passed=1 ORDER BY attempted_at DESC LIMIT 1');
+    $s->execute([$jobId, $user['id']]);
+    $attempt = $s->fetchColumn();
+    if (!$attempt) {
+        flash('error', 'A passing preliminary quiz result is required before applying.');
+        redirect('../public/job-details.php?id=' . $jobId);
+    }
+    try {
+        $pdo->prepare('INSERT INTO applications(job_id,seeker_id,qualifying_attempt_id,cover_letter) VALUES(?,?,?,?)')->execute([$jobId, $user['id'], $attempt, posted('cover_letter') ?: null]);
+        flash('success', 'Application submitted.');
+    } catch (PDOException $e) {
+        flash('error', 'You have already applied for this job.');
+    }
+    redirect('applications.php');
+}
+if ($jobId) {
+    $s = $pdo->prepare("SELECT title FROM jobs WHERE id=? AND status='active'");
+    $s->execute([$jobId]);
+    $job = $s->fetch();
+    if (!$job)
+        exit('Job not found.');
+    page_header('Apply'); ?>
+    <h1>Apply for <?= e($job['title']) ?></h1>
+    <form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden" name="job_id"
+            value="<?= $jobId ?>"><label>Cover letter</label><textarea name="cover_letter"></textarea>
+        <p><button>Submit application</button></p>
+    </form>
+    <?php page_footer();
+    exit;
+}
+$s = $pdo->prepare('SELECT a.*,j.title,e.company_name FROM applications a JOIN jobs j ON j.id=a.job_id JOIN employers e ON e.user_id=j.employer_id WHERE a.seeker_id=? ORDER BY a.applied_at DESC');
+$s->execute([$user['id']]);
+page_header('My applications'); ?>
+<h1>My applications</h1>
+<table>
+    <tr>
+        <th>Role</th>
+        <th>Company</th>
+        <th>Status</th>
+        <th>Applied</th>
+    </tr><?php foreach ($s as $a): ?>
+        <tr>
+            <td><?= e($a['title']) ?></td>
+            <td><?= e($a['company_name']) ?></td>
+            <td><?= status_label($a['status']) ?></td>
+            <td><?= e($a['applied_at']) ?></td>
+        </tr><?php endforeach; ?>
+</table><?php page_footer(); ?>

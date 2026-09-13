@@ -1,1 +1,20 @@
-<?php require_once __DIR__ . '/../includes/bootstrap.php';$user=require_login('seeker');$jobId=(int)($_GET['job_id']??0);$pdo=database();$s=$pdo->prepare('SELECT j.title,c.id,c.title course_title,c.description,c.difficulty,c.duration_hours,EXISTS(SELECT 1 FROM course_completions cc WHERE cc.course_id=c.id AND cc.seeker_id=?) completed FROM jobs j JOIN course_job_categories ccg ON ccg.category_id=j.category_id JOIN courses c ON c.id=ccg.course_id WHERE j.id=? AND c.is_active=1');$s->execute([$user['id'],$jobId]);$courses=$s->fetchAll();page_header('Recommended courses');?><h1>Recommended preparation</h1><p>These courses are recommended based on the skills associated with this job. Completing them may help you prepare for another attempt.</p><section class="grid"><?php foreach($courses as $course):?><article class="card"><span class="badge"><?=e($course['difficulty'])?></span><h2><?=e($course['course_title'])?></h2><p><?=e($course['description'])?></p><p class="meta"><?=e($course['duration_hours'])?> hours</p><p><?= $course['completed'] ? '<span class="badge">Completed</span>' : '' ?></p><a class="button small" href="course.php?id=<?=$course['id']?>&job_id=<?=$jobId?>">Open course</a></article><?php endforeach;?></section><?php page_footer(); ?>
+<?php require_once __DIR__ . '/../includes/bootstrap.php';
+$user = require_login('seeker');
+$jobId = (int) ($_GET['job_id'] ?? 0);
+$pdo = database();
+$s = $pdo->prepare('SELECT j.title,c.id,c.title course_title,c.description,c.difficulty,c.duration_hours,EXISTS(SELECT 1 FROM course_completions cc WHERE cc.course_id=c.id AND cc.seeker_id=?) completed FROM jobs j JOIN course_job_categories ccg ON ccg.category_id=j.category_id JOIN courses c ON c.id=ccg.course_id WHERE j.id=? AND c.is_active=1');
+$s->execute([$user['id'], $jobId]);
+$courses = $s->fetchAll();
+page_header('Recommended courses'); ?>
+<h1>Recommended preparation</h1>
+<p>These courses are recommended based on the skills associated with this job. Completing them may help you prepare for
+    another attempt.</p>
+<section class="grid"><?php foreach ($courses as $course): ?>
+        <article class="card"><span class="badge"><?= e($course['difficulty']) ?></span>
+            <h2><?= e($course['course_title']) ?></h2>
+            <p><?= e($course['description']) ?></p>
+            <p class="meta"><?= e($course['duration_hours']) ?> hours</p>
+            <p><?= $course['completed'] ? '<span class="badge">Completed</span>' : '' ?></p><a class="button small"
+                href="course.php?id=<?= $course['id'] ?>&job_id=<?= $jobId ?>">Open course</a>
+        </article><?php endforeach; ?>
+</section><?php page_footer(); ?>
