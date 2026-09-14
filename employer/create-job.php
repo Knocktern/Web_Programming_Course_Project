@@ -8,7 +8,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         flash('error', 'Please select a job category. If none are available, please contact the administrator.');
         redirect('create-job.php');
     }
-    $p->prepare('INSERT INTO jobs(employer_id,category_id,title,description,responsibilities,requirements_text,employment_type,workplace_type,location,salary_min,salary_max,vacancies,deadline,minimum_passing_score,status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')->execute([$u['id'],(int)$categoryId,posted('title'),posted('description'),posted('responsibilities') ?: null,posted('requirements') ?: null,posted('employment_type'),posted('workplace_type'),posted('location'),posted('salary_min') ?: null,posted('salary_max') ?: null,(int)$_POST['vacancies'],posted('deadline'),posted('minimum_passing_score'),'active']);
+    $salaryMin = trim($_POST['salary_min'] ?? '') !== '' ? (int)$_POST['salary_min'] : null;
+    $salaryMax = trim($_POST['salary_max'] ?? '') !== '' ? (int)$_POST['salary_max'] : null;
+    $p->prepare('INSERT INTO jobs(employer_id,category_id,title,description,responsibilities,requirements_text,employment_type,workplace_type,location,salary_min,salary_max,vacancies,deadline,minimum_passing_score,status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')->execute([$u['id'],(int)$categoryId,posted('title'),posted('description'),posted('responsibilities') ?: null,posted('requirements') ?: null,posted('employment_type'),posted('workplace_type'),posted('location'),$salaryMin,$salaryMax,(int)$_POST['vacancies'],posted('deadline'),posted('minimum_passing_score'),'active']);
     $id = $p->lastInsertId();
     flash('success', 'Job created. Add its quiz questions next.');
     redirect('quiz-builder.php?job_id='.$id);
