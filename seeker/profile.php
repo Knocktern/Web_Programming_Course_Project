@@ -56,81 +56,169 @@ $entryQueries = [
 ];
 page_header('My profile'); ?>
 <h1>Profile and CV builder</h1>
-<p><a class="button" href="cv-preview.php">Preview / print CV</a></p>
-<form method="post" class="form-grid"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input
-        type="hidden" name="action" value="profile">
-    <div><label>Full name</label><input name="full_name" value="<?= e($profile['full_name']) ?>" required></div>
-    <div><label>Email</label><input value="<?= e($profile['email']) ?>" disabled></div>
-    <div><label>Phone</label><input name="phone" value="<?= e($profile['phone']) ?>"></div>
-    <div><label>Date of birth</label><input type="date" name="date_of_birth" value="<?= e($profile['date_of_birth']) ?>">
-    </div>
-    <div class="full"><label>Address</label><input name="address" value="<?= e($profile['address']) ?>"></div>
-    <div class="full"><label>Professional summary</label><textarea
-            name="profile_summary"><?= e($profile['profile_summary']) ?></textarea></div>
-    <div class="full"><button>Save profile</button></div>
-</form>
-<section class="grid">
-    <form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden"
-            name="action" value="skill">
-        <h2>Skill</h2><label>Skill name</label><input name="skill_name" required><label>Level</label><select
-            name="skill_level">
-            <option>beginner</option>
-            <option>intermediate</option>
-            <option>advanced</option>
-            <option>expert</option>
-        </select>
-        <p><button>Add skill</button></p>
+<p>
+    <a class="button" href="cv-preview.php">Preview / print CV</a>
+    <a class="button secondary" href="dashboard.php">Back to dashboard</a>
+</p>
+
+<article class="card">
+
+    <!-- Personal information -->
+    <h2>Personal information</h2>
+    <form method="post" class="form-grid">
+        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+        <input type="hidden" name="action" value="profile">
+        <div><label>Full name</label><input name="full_name" value="<?= e($profile['full_name']) ?>" required></div>
+        <div><label>Email</label><input value="<?= e($profile['email']) ?>" disabled></div>
+        <div><label>Phone</label><input name="phone" value="<?= e($profile['phone']) ?>"></div>
+        <div><label>Date of birth</label><input type="date" name="date_of_birth" value="<?= e($profile['date_of_birth']) ?>"></div>
+        <div class="full"><label>Address</label><input name="address" value="<?= e($profile['address']) ?>"></div>
+        <div class="full"><label>Professional summary</label><textarea name="profile_summary"><?= e($profile['profile_summary']) ?></textarea></div>
+        <div class="full"><button>Save profile</button></div>
     </form>
-    <form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden"
-            name="action" value="education">
-        <h2>Education</h2><label>Institution</label><input name="institution" required><label>Degree</label><input
-            name="degree" required><label>Field</label><input name="field"><label>Start / end</label><input type="date"
-            name="start_date"><input type="date" name="end_date"><label>Result / GPA</label><input name="result">
-        <p><button>Add education</button></p>
-    </form>
-    <form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden"
-            name="action" value="experience">
-        <h2>Experience</h2><label>Company</label><input name="company" required><label>Position</label><input
-            name="position" required><label>Description</label><textarea name="description"></textarea><label>Start
-            date</label><input type="date" name="start_date" required><label>End date</label><input type="date"
-            name="end_date">
-        <p><button>Add experience</button></p>
-    </form>
-    <form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden"
-            name="action" value="project">
-        <h2>Project</h2><label>Title</label><input name="title" required><label>Description</label><textarea
-            name="description"></textarea><label>Technologies</label><input name="technologies"><label>URL</label><input
-            name="url" type="url">
-        <p><button>Add project</button></p>
-    </form>
-    <form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden"
-            name="action" value="certification">
-        <h2>Certification</h2><label>Name</label><input name="certification_name" required><label>Issuer</label><input
-            name="issuer" required><label>Issue date</label><input type="date" name="issue_date"><label>Credential
-            URL</label><input name="url" type="url">
-        <p><button>Add certification</button></p>
-    </form>
-    <form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden"
-            name="action" value="language">
-        <h2>Language</h2><label>Language</label><input name="language_name" required><label>Proficiency</label><select
-            name="proficiency">
-            <option>basic</option>
-            <option>conversational</option>
-            <option>professional</option>
-            <option>native</option>
-        </select>
-        <p><button>Add language</button></p>
-    </form>
-</section>
-<section class="saved-entries">
-    <h2>Saved CV information</h2>
-    <div class="grid">
-        <?php foreach ($entryQueries as $table => [$title, $query]): $entries = $pdo->prepare($query);
-            $entries->execute([$user['id']]); ?>
-            <article class="card"><h3><?= e($title) ?></h3>
-                <?php foreach ($entries as $entry): ?><div class="entry-row"><span><strong><?= e($entry['label']) ?></strong><small><?= e($entry['detail']) ?></small></span><form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden" name="action" value="delete_entry"><input type="hidden" name="entry_table" value="<?= e($table) ?>"><input type="hidden" name="entry_id" value="<?= $entry['id'] ?>"><button class="button danger small" data-confirm="Remove this entry?">Remove</button></form></div><?php endforeach; ?>
-            </article>
+
+    <hr>
+
+    <!-- Skills -->
+    <h2>Skills</h2>
+    <?php $entries = $pdo->prepare('SELECT id, skill_name label, skill_level detail FROM job_seeker_skills WHERE seeker_id=?');
+    $entries->execute([$user['id']]); $skillEntries = $entries->fetchAll(); ?>
+    <?php if ($skillEntries): ?>
+        <?php foreach ($skillEntries as $entry): ?>
+        <div class="entry-row">
+            <span><strong><?= e($entry['label']) ?></strong> <small><?= e($entry['detail']) ?></small></span>
+            <form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden" name="action" value="delete_entry"><input type="hidden" name="entry_table" value="job_seeker_skills"><input type="hidden" name="entry_id" value="<?= $entry['id'] ?>"><button class="button danger small">Remove</button></form>
+        </div>
         <?php endforeach; ?>
-    </div>
-</section>
+    <?php endif; ?>
+    <form method="post" class="form-grid">
+        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+        <input type="hidden" name="action" value="skill">
+        <div><label>Skill name</label><input name="skill_name" required></div>
+        <div><label>Level</label><select name="skill_level"><option>beginner</option><option>intermediate</option><option>advanced</option><option>expert</option></select></div>
+        <div class="full"><button>Add skill</button></div>
+    </form>
+
+    <hr>
+
+    <!-- Education -->
+    <h2>Education</h2>
+    <?php $entries = $pdo->prepare("SELECT id, institution label, CONCAT(degree, COALESCE(CONCAT(' - ', field_of_study), '')) detail FROM education WHERE seeker_id=?");
+    $entries->execute([$user['id']]); $eduEntries = $entries->fetchAll(); ?>
+    <?php if ($eduEntries): ?>
+        <?php foreach ($eduEntries as $entry): ?>
+        <div class="entry-row">
+            <span><strong><?= e($entry['label']) ?></strong> <small><?= e($entry['detail']) ?></small></span>
+            <form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden" name="action" value="delete_entry"><input type="hidden" name="entry_table" value="education"><input type="hidden" name="entry_id" value="<?= $entry['id'] ?>"><button class="button danger small">Remove</button></form>
+        </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+    <form method="post" class="form-grid">
+        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+        <input type="hidden" name="action" value="education">
+        <div><label>Institution</label><input name="institution" required></div>
+        <div><label>Degree</label><input name="degree" required></div>
+        <div><label>Field of study</label><input name="field"></div>
+        <div><label>Result / GPA</label><input name="result"></div>
+        <div><label>Start date</label><input type="date" name="start_date"></div>
+        <div><label>End date</label><input type="date" name="end_date"></div>
+        <div class="full"><button>Add education</button></div>
+    </form>
+
+    <hr>
+
+    <!-- Experience -->
+    <h2>Experience</h2>
+    <?php $entries = $pdo->prepare("SELECT id, company label, position_title detail FROM experience WHERE seeker_id=?");
+    $entries->execute([$user['id']]); $expEntries = $entries->fetchAll(); ?>
+    <?php if ($expEntries): ?>
+        <?php foreach ($expEntries as $entry): ?>
+        <div class="entry-row">
+            <span><strong><?= e($entry['label']) ?></strong> <small><?= e($entry['detail']) ?></small></span>
+            <form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden" name="action" value="delete_entry"><input type="hidden" name="entry_table" value="experience"><input type="hidden" name="entry_id" value="<?= $entry['id'] ?>"><button class="button danger small">Remove</button></form>
+        </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+    <form method="post" class="form-grid">
+        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+        <input type="hidden" name="action" value="experience">
+        <div><label>Company</label><input name="company" required></div>
+        <div><label>Position</label><input name="position" required></div>
+        <div class="full"><label>Description</label><textarea name="description"></textarea></div>
+        <div><label>Start date</label><input type="date" name="start_date" required></div>
+        <div><label>End date</label><input type="date" name="end_date"></div>
+        <div class="full"><button>Add experience</button></div>
+    </form>
+
+    <hr>
+
+    <!-- Projects -->
+    <h2>Projects</h2>
+    <?php $entries = $pdo->prepare("SELECT id, title label, technologies detail FROM projects WHERE seeker_id=?");
+    $entries->execute([$user['id']]); $projEntries = $entries->fetchAll(); ?>
+    <?php if ($projEntries): ?>
+        <?php foreach ($projEntries as $entry): ?>
+        <div class="entry-row">
+            <span><strong><?= e($entry['label']) ?></strong> <small><?= e($entry['detail']) ?></small></span>
+            <form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden" name="action" value="delete_entry"><input type="hidden" name="entry_table" value="projects"><input type="hidden" name="entry_id" value="<?= $entry['id'] ?>"><button class="button danger small">Remove</button></form>
+        </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+    <form method="post" class="form-grid">
+        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+        <input type="hidden" name="action" value="project">
+        <div><label>Title</label><input name="title" required></div>
+        <div><label>Technologies</label><input name="technologies"></div>
+        <div class="full"><label>Description</label><textarea name="description"></textarea></div>
+        <div class="full"><label>URL</label><input name="url" type="url"></div>
+        <div class="full"><button>Add project</button></div>
+    </form>
+
+    <hr>
+
+    <!-- Certifications -->
+    <h2>Certifications</h2>
+    <?php $entries = $pdo->prepare("SELECT id, certification_name label, issuing_organization detail FROM certifications WHERE seeker_id=?");
+    $entries->execute([$user['id']]); $certEntries = $entries->fetchAll(); ?>
+    <?php if ($certEntries): ?>
+        <?php foreach ($certEntries as $entry): ?>
+        <div class="entry-row">
+            <span><strong><?= e($entry['label']) ?></strong> <small><?= e($entry['detail']) ?></small></span>
+            <form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden" name="action" value="delete_entry"><input type="hidden" name="entry_table" value="certifications"><input type="hidden" name="entry_id" value="<?= $entry['id'] ?>"><button class="button danger small">Remove</button></form>
+        </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+    <form method="post" class="form-grid">
+        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+        <input type="hidden" name="action" value="certification">
+        <div><label>Name</label><input name="certification_name" required></div>
+        <div><label>Issuer</label><input name="issuer" required></div>
+        <div><label>Issue date</label><input type="date" name="issue_date"></div>
+        <div><label>Credential URL</label><input name="url" type="url"></div>
+        <div class="full"><button>Add certification</button></div>
+    </form>
+
+    <hr>
+
+    <!-- Languages -->
+    <h2>Languages</h2>
+    <?php $entries = $pdo->prepare('SELECT id, language_name label, proficiency detail FROM languages WHERE seeker_id=?');
+    $entries->execute([$user['id']]); $langEntries = $entries->fetchAll(); ?>
+    <?php if ($langEntries): ?>
+        <?php foreach ($langEntries as $entry): ?>
+        <div class="entry-row">
+            <span><strong><?= e($entry['label']) ?></strong> <small><?= e($entry['detail']) ?></small></span>
+            <form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden" name="action" value="delete_entry"><input type="hidden" name="entry_table" value="languages"><input type="hidden" name="entry_id" value="<?= $entry['id'] ?>"><button class="button danger small">Remove</button></form>
+        </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+    <form method="post" class="form-grid">
+        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+        <input type="hidden" name="action" value="language">
+        <div><label>Language</label><input name="language_name" required></div>
+        <div><label>Proficiency</label><select name="proficiency"><option>basic</option><option>conversational</option><option>professional</option><option>native</option></select></div>
+        <div class="full"><button>Add language</button></div>
+    </form>
+
+</article>
 <?php page_footer(); ?>
