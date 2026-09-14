@@ -14,3 +14,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }, 6000);
 });
+
+let lastScrollTop = 0;
+window.addEventListener('scroll', () => {
+    const header = document.querySelector('.site-header');
+    if (!header) return;
+    
+    let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+    
+    if (currentScroll > lastScrollTop && currentScroll > 80) {
+        // Scroll Down
+        header.classList.add('header-hidden');
+    } else {
+        // Scroll Up
+        header.classList.remove('header-hidden');
+    }
+    lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+}, { passive: true });
