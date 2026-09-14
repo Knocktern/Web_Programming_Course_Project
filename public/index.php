@@ -86,10 +86,10 @@ page_header('Find your next opportunity'); ?>
     <p class="lead">Explore roles, build a professional CV, complete job-specific screening, and strengthen your skills through focused courses.</p>
     <div class="hero-buttons">
         <a class="button" href="jobs.php" style="font-size: 1.1rem; padding: 1rem 2rem;">Explore Jobs</a>
-        <?php if (!is_logged_in()): ?>
+        <?php if (!current_user()): ?>
             <a class="button secondary" href="register.php" style="font-size: 1.1rem; padding: 1rem 2rem;">Create Account</a>
         <?php else: ?>
-            <a class="button secondary" href="<?= dashboard_path(get_user_role()) ?>" style="font-size: 1.1rem; padding: 1rem 2rem;">Go to Dashboard</a>
+            <a class="button secondary" href="<?= dashboard_path(current_user()['role']) ?>" style="font-size: 1.1rem; padding: 1rem 2rem;">Go to Dashboard</a>
         <?php endif; ?>
     </div>
 </section>
@@ -124,7 +124,7 @@ page_header('Find your next opportunity'); ?>
     <h2>Ready to take the next step?</h2>
     <p class="lead" style="margin: 0 auto 2rem; max-width: 600px;">Join thousands of job seekers and top companies using SkillGate to find the perfect match.</p>
     <div class="hero-buttons">
-        <?php if (!is_logged_in()): ?>
+        <?php if (!current_user()): ?>
             <a class="button" href="register.php">Get Started for Free</a>
             <a class="button secondary" href="login.php">Sign In</a>
         <?php else: ?>
