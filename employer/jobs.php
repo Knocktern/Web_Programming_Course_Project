@@ -34,25 +34,27 @@ page_header('My jobs');
         <td><?= e($job['category']) ?></td>
         <td><?= status_badge($job['status']) ?></td>
         <td>
-            <a href="edit-job.php?id=<?= $job['id'] ?>">Edit</a> &middot; 
-            <a href="quiz-builder.php?job_id=<?= $job['id'] ?>">Quiz</a> &middot; 
-            <a href="applicants.php?job_id=<?= $job['id'] ?>">Applicants</a>
-            
-            <?php if ($job['status'] === 'active'): ?>
-                <form method="post" class="inline-form" style="display:inline">
-                    <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                    <input type="hidden" name="job_id" value="<?= $job['id'] ?>">
-                    <input type="hidden" name="new_status" value="deactivated">
-                    <button class="button danger small" data-confirm="Deactivate this job?">Deactivate</button>
-                </form>
-            <?php elseif ($job['status'] === 'deactivated'): ?>
-                <form method="post" class="inline-form" style="display:inline">
-                    <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                    <input type="hidden" name="job_id" value="<?= $job['id'] ?>">
-                    <input type="hidden" name="new_status" value="active">
-                    <button class="button small" data-confirm="Reactivate this job?">Reactivate</button>
-                </form>
-            <?php endif; ?>
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <a href="edit-job.php?id=<?= $job['id'] ?>">Edit</a> &middot; 
+                <a href="quiz-builder.php?job_id=<?= $job['id'] ?>">Quiz</a> &middot; 
+                <a href="applicants.php?job_id=<?= $job['id'] ?>">Applicants</a>
+                
+                <?php if ($job['status'] === 'active'): ?>
+                    <form method="post" class="inline-form" style="margin-left: 0.5rem;">
+                        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                        <input type="hidden" name="job_id" value="<?= $job['id'] ?>">
+                        <input type="hidden" name="new_status" value="deactivated">
+                        <button class="button danger small" data-confirm="Deactivate this job?" style="margin-bottom: 0;">Deactivate</button>
+                    </form>
+                <?php elseif ($job['status'] === 'deactivated'): ?>
+                    <form method="post" class="inline-form" style="margin-left: 0.5rem;">
+                        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                        <input type="hidden" name="job_id" value="<?= $job['id'] ?>">
+                        <input type="hidden" name="new_status" value="active">
+                        <button class="button small" data-confirm="Reactivate this job?" style="margin-bottom: 0;">Reactivate</button>
+                    </form>
+                <?php endif; ?>
+            </div>
         </td>
     </tr>
     <?php endforeach; ?>
