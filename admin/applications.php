@@ -15,7 +15,7 @@ page_header('Applications'); ?>
             <td><?= e($r['full_name']) ?></td>
             <td><?= e($r['title']) ?></td>
             <td><?= e($r['company_name']) ?></td>
-            <td><?= status_label($r['status']) ?></td>
+            <td><?= status_badge($r['status']) ?></td>
             <td><?= e($r['applied_at']) ?></td>
         </tr><?php endforeach; ?>
 </table><?php page_footer(); ?>

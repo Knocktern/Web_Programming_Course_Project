@@ -3,12 +3,13 @@ $user = require_login('seeker');
 $s = database()->prepare('SELECT qa.*,j.title,j.id job_id FROM quiz_attempts qa JOIN jobs j ON j.id=qa.job_id WHERE qa.id=? AND qa.seeker_id=?');
 $s->execute([(int) ($_GET['id'] ?? 0), $user['id']]);
 $a = $s->fetch();
-if (!$a)
+if (!$a) {
     exit('Result not found.');
+}
 page_header('Quiz result'); ?>
 <article class="card">
     <h1><?= $a['passed'] ? 'You passed' : 'Keep preparing' ?></h1>
-    <p class="lead">Score: <?= e($a['percentage']) ?>% (<?= e($a['score']) ?> / <?= e($a['total_marks']) ?> marks)</p>
+    <p class="lead"><?= passed_badge((bool)$a['passed']) ?> Score: <?= e($a['percentage']) ?>% (<?= e($a['score']) ?> / <?= e($a['total_marks']) ?> marks)</p>
     <?php if ($a['passed']): ?>
         <p>You may now apply for <?= e($a['title']) ?>.</p><a class="button"
             href="applications.php?job_id=<?= $a['job_id'] ?>">Apply for this role</a><?php else: ?>

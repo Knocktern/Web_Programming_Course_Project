@@ -1,1 +1,12 @@
-<?php require_once __DIR__ . '/../includes/bootstrap.php';$u=require_login('employer');$p=database();if($_SERVER['REQUEST_METHOD']==='POST'){verify_csrf();$id=(int)$_POST['job_id'];$p->prepare("UPDATE jobs SET status='deactivated' WHERE id=? AND employer_id=?")->execute([$id,$u['id']]);flash('success','Job deactivated.');redirect('jobs.php');}$s=$p->prepare('SELECT j.*,c.name category FROM jobs j JOIN job_categories c ON c.id=j.category_id WHERE j.employer_id=? ORDER BY j.created_at DESC');$s->execute([$u['id']]);page_header('My jobs');?><h1>Job postings</h1><p><a class="button" href="create-job.php">Create job</a></p><table><tr><th>Title</th><th>Category</th><th>Status</th><th>Actions</th></tr><?php foreach($s as $job):?><tr><td><?=e($job['title'])?></td><td><?=e($job['category'])?></td><td><?=status_label($job['status'])?></td><td><a href="edit-job.php?id=<?=$job['id']?>">Edit</a> · <a href="quiz-builder.php?job_id=<?=$job['id']?>">Quiz</a> · <a href="applicants.php?job_id=<?=$job['id']?>">Applicants</a> <form method="post" style="display:inline"><input type="hidden" name="csrf_token" value="<?=csrf_token()?>"><input type="hidden" name="job_id" value="<?=$job['id']?>"><button class="small" data-confirm="Deactivate this job?">Deactivate</button></form></td></tr><?php endforeach;?></table><?php page_footer(); ?>
+<?php require_once __DIR__ . '/../includes/bootstrap.php';
+$u = require_login('employer');
+$p = database();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+    $id = (int)$_POST['job_id'];
+    $p->prepare("UPDATE jobs SET status='deactivated' WHERE id=? AND employer_id=?")->execute([$id,$u['id']]);
+    flash('success', 'Job deactivated.');
+    redirect('jobs.php');
+}$s = $p->prepare('SELECT j.*,c.name category FROM jobs j JOIN job_categories c ON c.id=j.category_id WHERE j.employer_id=? ORDER BY j.created_at DESC');
+$s->execute([$u['id']]);
+page_header('My jobs');?><h1>Job postings</h1><p><a class="button" href="create-job.php">Create job</a></p><table><tr><th>Title</th><th>Category</th><th>Status</th><th>Actions</th></tr><?php foreach ($s as $job):?><tr><td><?=e($job['title'])?></td><td><?=e($job['category'])?></td><td><?=status_badge($job['status'])?></td><td><a href="edit-job.php?id=<?=$job['id']?>">Edit</a> · <a href="quiz-builder.php?job_id=<?=$job['id']?>">Quiz</a> · <a href="applicants.php?job_id=<?=$job['id']?>">Applicants</a> <form method="post" style="display:inline"><input type="hidden" name="csrf_token" value="<?=csrf_token()?>"><input type="hidden" name="job_id" value="<?=$job['id']?>"><button class="small" data-confirm="Deactivate this job?">Deactivate</button></form></td></tr><?php endforeach;?></table><?php page_footer(); ?>
