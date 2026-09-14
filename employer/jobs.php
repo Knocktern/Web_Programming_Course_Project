@@ -39,14 +39,14 @@ page_header('My jobs');
             <a href="applicants.php?job_id=<?= $job['id'] ?>">Applicants</a>
             
             <?php if ($job['status'] === 'active'): ?>
-                <form method="post" style="display:inline">
+                <form method="post" class="inline-form" style="display:inline">
                     <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                     <input type="hidden" name="job_id" value="<?= $job['id'] ?>">
                     <input type="hidden" name="new_status" value="deactivated">
                     <button class="button danger small" data-confirm="Deactivate this job?">Deactivate</button>
                 </form>
             <?php elseif ($job['status'] === 'deactivated'): ?>
-                <form method="post" style="display:inline">
+                <form method="post" class="inline-form" style="display:inline">
                     <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                     <input type="hidden" name="job_id" value="<?= $job['id'] ?>">
                     <input type="hidden" name="new_status" value="active">

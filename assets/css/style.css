@@ -422,7 +422,7 @@ tr:last-child td {
     margin-top: 0.25rem;
 }
 
-.entry-row form {
+.entry-row form, form.inline-form {
     margin: 0;
     padding: 0;
     border: 0;
