@@ -10,4 +10,6 @@
 .idea/
 *.log
 Thumbs.db
-Desktop.ini
+Desktop.inidesign_prototype/
+.DS_Store
+.php-cs-fixer.cache
