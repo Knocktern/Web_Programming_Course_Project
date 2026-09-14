@@ -2,11 +2,13 @@
 page_header('Find your next opportunity'); ?>
 
 <style>
+/* Override default hero background to ensure uniform page background */
 .hero {
     text-align: center;
     margin: 0 auto;
     padding: 8rem 1rem 6rem;
     max-width: 900px;
+    background: transparent !important;
 }
 .hero h1 {
     font-size: clamp(3rem, 8vw, 5rem);
@@ -14,8 +16,9 @@ page_header('Find your next opportunity'); ?>
 }
 .hero .lead {
     margin: 0 auto 2.5rem;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     color: var(--slate);
+    max-width: 600px;
 }
 .hero-buttons {
     display: flex;
@@ -25,45 +28,65 @@ page_header('Find your next opportunity'); ?>
 }
 .features-section {
     padding: 6rem 0;
-    border-top: 1px solid var(--line);
-    margin-top: 4rem;
+    margin-top: 2rem;
 }
 .section-title {
     text-align: center;
     margin-bottom: 4rem;
 }
 .feature-card {
-    text-align: center;
     padding: 3rem 2rem;
     background: #fff;
     border: 1px solid var(--line);
     border-radius: 24px;
     box-shadow: var(--shadow-sm);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
 }
 .feature-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-4px);
     box-shadow: var(--shadow-md);
 }
 .feature-icon {
-    font-size: 3rem;
-    margin-bottom: 1.5rem;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    background: var(--peach);
+    color: var(--amber);
+    border-radius: 16px;
+    margin-bottom: 2rem;
+}
+.feature-icon .material-symbols-outlined {
+    font-size: 32px;
+}
+.feature-card h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+}
+.feature-card p {
+    color: var(--slate);
+    margin: 0;
+    line-height: 1.6;
 }
 .cta-section {
     background: var(--ink);
     color: #fff;
     border-radius: 32px;
-    padding: 5rem 2rem;
+    padding: 6rem 2rem;
     text-align: center;
     margin: 6rem 0 2rem;
 }
 .cta-section h2 {
     color: #fff;
     margin-top: 0;
+    font-size: 2.5rem;
 }
 .cta-section .lead {
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.7);
+    max-width: 500px;
 }
 .cta-section .button {
     background: #fff;
@@ -72,7 +95,7 @@ page_header('Find your next opportunity'); ?>
 .cta-section .button.secondary {
     background: transparent;
     color: #fff;
-    border-color: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.2);
 }
 .cta-section .button:hover {
     transform: translateY(-2px);
@@ -101,28 +124,34 @@ page_header('Find your next opportunity'); ?>
     </div>
     <div class="grid">
         <article class="feature-card">
-            <div class="feature-icon">🎯</div>
+            <div class="feature-icon">
+                <span class="material-symbols-outlined">person_search</span>
+            </div>
             <h3>For job seekers</h3>
-            <p>Build your comprehensive profile, take preliminary skills assessments, and apply with confidence.</p>
+            <p>Build your comprehensive profile, take preliminary skills assessments, and apply to relevant roles with confidence.</p>
         </article>
         
         <article class="feature-card">
-            <div class="feature-icon">🏢</div>
+            <div class="feature-icon">
+                <span class="material-symbols-outlined">business_center</span>
+            </div>
             <h3>For employers</h3>
-            <p>Publish targeted roles, build practical screening quizzes, and manage qualified candidates efficiently.</p>
+            <p>Publish targeted roles, build practical screening quizzes, and manage qualified candidates efficiently in one place.</p>
         </article>
         
         <article class="feature-card">
-            <div class="feature-icon">📚</div>
+            <div class="feature-icon">
+                <span class="material-symbols-outlined">school</span>
+            </div>
             <h3>For learning</h3>
-            <p>Use category-linked course recommendations to prepare for roles and upskill for your next attempt.</p>
+            <p>Use category-linked course recommendations to prepare for specific roles and upskill for your next career move.</p>
         </article>
     </div>
 </section>
 
 <section class="cta-section">
     <h2>Ready to take the next step?</h2>
-    <p class="lead" style="margin: 0 auto 2rem; max-width: 600px;">Join thousands of job seekers and top companies using SkillGate to find the perfect match.</p>
+    <p class="lead" style="margin: 0 auto 2.5rem; max-width: 600px;">Join thousands of professionals and top companies using SkillGate to find the perfect match.</p>
     <div class="hero-buttons">
         <?php if (!current_user()): ?>
             <a class="button" href="register.php">Get Started for Free</a>
