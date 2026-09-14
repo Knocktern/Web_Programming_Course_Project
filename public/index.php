@@ -1,4 +1,5 @@
-<?php require_once __DIR__ . '/../includes/bootstrap.php'; page_header('Find your next opportunity'); ?>
+<?php require_once __DIR__ . '/../includes/bootstrap.php';
+page_header('Find your next opportunity'); ?>
 <section class="hero"><p class="badge">Career readiness, made practical</p><h1>Prepare. Prove it. Get hired.</h1><p class="lead">Explore roles, build a professional CV, complete job-specific screening, and strengthen skills through focused courses.</p><p><a class="button" href="jobs.php">Browse jobs</a> <a class="button secondary" href="register.php">Create an account</a></p></section>
 <section class="grid"><article class="card"><h3>For job seekers</h3><p>Build your profile, pass a preliminary quiz, and apply with confidence.</p></article><article class="card"><h3>For employers</h3><p>Publish roles, build practical screening quizzes, and manage candidates.</p></article><article class="card"><h3>For learning</h3><p>Use category-linked course recommendations to prepare for another attempt.</p></article></section>
 <?php page_footer(); ?>

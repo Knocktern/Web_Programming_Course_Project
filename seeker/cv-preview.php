@@ -18,8 +18,10 @@ page_header('CV preview'); ?>
         $rows = $s->fetchAll();
         if ($rows): ?>
             <h2><?= e($title) ?></h2><?php foreach ($rows as $row): ?>
-                <p><?php foreach ($row as $value)
-                    if ($value)
-                        echo e($value) . ' '; ?></p><?php endforeach; endif; endforeach; ?>
+                <p><?php foreach ($row as $value) {
+                    if ($value) {
+                        echo e($value) . ' ';
+                    }
+                } ?></p><?php endforeach; endif; endforeach; ?>
 </article>
 <?php page_footer(); ?>

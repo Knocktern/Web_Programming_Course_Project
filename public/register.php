@@ -1,7 +1,8 @@
 <?php
 require_once __DIR__ . '/../includes/bootstrap.php';
-if (current_user())
+if (current_user()) {
     redirect(dashboard_path(current_user()['role']));
+}
 $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf();
@@ -9,14 +10,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = posted('password');
     $role = posted('role');
     $name = posted('name');
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL))
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'Enter a valid email address.';
-    if (strlen($password) < 8)
+    }
+    if (strlen($password) < 8) {
         $errors[] = 'Password must contain at least 8 characters.';
-    if (!in_array($role, ['seeker', 'employer'], true))
+    }
+    if (!in_array($role, ['seeker', 'employer'], true)) {
         $errors[] = 'Choose an account type.';
-    if ($name === '')
+    }
+    if ($name === '') {
         $errors[] = 'Enter your name or company name.';
+    }
     if (!$errors) {
         try {
             $pdo = database();
@@ -24,16 +29,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $statement = $pdo->prepare('INSERT INTO users (email, password_hash, role) VALUES (?, ?, ?)');
             $statement->execute([$email, password_hash($password, PASSWORD_DEFAULT), $role]);
             $userId = (int) $pdo->lastInsertId();
-            if ($role === 'seeker')
+            if ($role === 'seeker') {
                 database()->prepare('INSERT INTO job_seekers (user_id, full_name) VALUES (?, ?)')->execute([$userId, $name]);
-            else
+            } else {
                 database()->prepare('INSERT INTO employers (user_id, company_name, contact_name) VALUES (?, ?, ?)')->execute([$userId, $name, posted('contact_name') ?: null]);
+            }
             $pdo->commit();
             flash('success', 'Account created. Please sign in.');
             redirect('login.php');
         } catch (PDOException $exception) {
-            if (database()->inTransaction())
+            if (database()->inTransaction()) {
                 database()->rollBack();
+            }
             $errors[] = 'That email address is already registered.';
         }
     }

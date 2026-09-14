@@ -125,7 +125,8 @@ page_header('My profile'); ?>
 <section class="saved-entries">
     <h2>Saved CV information</h2>
     <div class="grid">
-        <?php foreach ($entryQueries as $table => [$title, $query]): $entries = $pdo->prepare($query); $entries->execute([$user['id']]); ?>
+        <?php foreach ($entryQueries as $table => [$title, $query]): $entries = $pdo->prepare($query);
+            $entries->execute([$user['id']]); ?>
             <article class="card"><h3><?= e($title) ?></h3>
                 <?php foreach ($entries as $entry): ?><div class="entry-row"><span><strong><?= e($entry['label']) ?></strong><small><?= e($entry['detail']) ?></small></span><form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden" name="action" value="delete_entry"><input type="hidden" name="entry_table" value="<?= e($table) ?>"><input type="hidden" name="entry_id" value="<?= $entry['id'] ?>"><button class="button danger small" data-confirm="Remove this entry?">Remove</button></form></div><?php endforeach; ?>
             </article>

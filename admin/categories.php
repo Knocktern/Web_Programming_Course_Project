@@ -1,1 +1,10 @@
-<?php require_once __DIR__ . '/../includes/bootstrap.php';require_login('admin');$p=database();if($_SERVER['REQUEST_METHOD']==='POST'){verify_csrf();if(posted('name')!=='')$p->prepare('INSERT INTO job_categories(name,description) VALUES(?,?)')->execute([posted('name'),posted('description')?:null]);redirect('categories.php');}$items=$p->query('SELECT * FROM job_categories ORDER BY name')->fetchAll();page_header('Categories');?><h1>Job categories</h1><form method="post"><input type="hidden" name="csrf_token" value="<?=csrf_token()?>"><label>Name</label><input name="name" required><label>Description</label><textarea name="description"></textarea><p><button>Add category</button></p></form><table><tr><th>Name</th><th>Description</th><th>Active</th></tr><?php foreach($items as $i):?><tr><td><?=e($i['name'])?></td><td><?=e($i['description'])?></td><td><?=e((string)$i['is_active'])?></td></tr><?php endforeach;?></table><?php page_footer(); ?>
+<?php require_once __DIR__ . '/../includes/bootstrap.php';
+require_login('admin');
+$p = database();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+    if (posted('name') !== '') {
+        $p->prepare('INSERT INTO job_categories(name,description) VALUES(?,?)')->execute([posted('name'),posted('description') ?: null]);
+    }redirect('categories.php');
+}$items = $p->query('SELECT * FROM job_categories ORDER BY name')->fetchAll();
+page_header('Categories');?><h1>Job categories</h1><form method="post"><input type="hidden" name="csrf_token" value="<?=csrf_token()?>"><label>Name</label><input name="name" required><label>Description</label><textarea name="description"></textarea><p><button>Add category</button></p></form><table><tr><th>Name</th><th>Description</th><th>Active</th></tr><?php foreach ($items as $i):?><tr><td><?=e($i['name'])?></td><td><?=e($i['description'])?></td><td><?=e((string)$i['is_active'])?></td></tr><?php endforeach;?></table><?php page_footer(); ?>

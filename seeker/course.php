@@ -11,16 +11,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $s = $pdo->prepare('SELECT * FROM courses WHERE id=? AND is_active=1');
 $s->execute([$id]);
 $course = $s->fetch();
-if (!$course)
+if (!$course) {
     exit('Course not found.');
+}
 $s = $pdo->prepare('SELECT * FROM course_videos WHERE course_id=? ORDER BY display_order');
 $s->execute([$id]);
 $videos = $s->fetchAll();
 $video = $videos[0] ?? null;
-if (isset($_GET['video']))
-    foreach ($videos as $v)
-        if ((int) $v['id'] === (int) $_GET['video'])
+if (isset($_GET['video'])) {
+    foreach ($videos as $v) {
+        if ((int) $v['id'] === (int) $_GET['video']) {
             $video = $v;
+        }
+    }
+}
 page_header($course['title']); ?>
 <h1><?= e($course['title']) ?></h1>
 <p class="lead"><?= e($course['description']) ?></p>

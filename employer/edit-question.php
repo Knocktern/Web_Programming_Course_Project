@@ -1,1 +1,15 @@
-<?php require_once __DIR__ . '/../includes/bootstrap.php';$u=require_login('employer');$p=database();$id=(int)($_GET['id']??$_POST['id']??0);$s=$p->prepare('SELECT q.* FROM quiz_questions q JOIN jobs j ON j.id=q.job_id WHERE q.id=? AND j.employer_id=?');$s->execute([$id,$u['id']]);$q=$s->fetch();if(!$q)exit('Question not found.');if($_SERVER['REQUEST_METHOD']==='POST'){verify_csrf();$p->prepare('UPDATE quiz_questions SET question_text=?,option_a=?,option_b=?,option_c=?,option_d=?,correct_option=?,marks=? WHERE id=?')->execute([posted('question'),posted('a'),posted('b'),posted('c'),posted('d'),posted('correct'),posted('marks'),$id]);flash('success','Question updated.');redirect('quiz-builder.php?job_id='.$q['job_id']);}page_header('Edit question');?><h1>Edit question</h1><form method="post" class="form-grid"><input type="hidden" name="csrf_token" value="<?=csrf_token()?>"><label class="full">Question<textarea name="question"><?=e($q['question_text'])?></textarea></label><?php foreach(['a','b','c','d'] as $x):?><label>Option <?=strtoupper($x)?><input name="<?=$x?>" value="<?=e($q['option_'.$x])?>"></label><?php endforeach;?><label>Correct<select name="correct"><?php foreach(['A','B','C','D'] as $x):?><option <?=$q['correct_option']===$x?'selected':''?>><?=$x?></option><?php endforeach;?></select></label><label>Marks<input name="marks" type="number" min="1" value="<?=e($q['marks'])?>"></label><button class="full">Save question</button></form><?php page_footer(); ?>
+<?php require_once __DIR__ . '/../includes/bootstrap.php';
+$u = require_login('employer');
+$p = database();
+$id = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
+$s = $p->prepare('SELECT q.* FROM quiz_questions q JOIN jobs j ON j.id=q.job_id WHERE q.id=? AND j.employer_id=?');
+$s->execute([$id,$u['id']]);
+$q = $s->fetch();
+if (!$q) {
+    exit('Question not found.');
+}if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+    $p->prepare('UPDATE quiz_questions SET question_text=?,option_a=?,option_b=?,option_c=?,option_d=?,correct_option=?,marks=? WHERE id=?')->execute([posted('question'),posted('a'),posted('b'),posted('c'),posted('d'),posted('correct'),posted('marks'),$id]);
+    flash('success', 'Question updated.');
+    redirect('quiz-builder.php?job_id='.$q['job_id']);
+}page_header('Edit question');?><h1>Edit question</h1><form method="post" class="form-grid"><input type="hidden" name="csrf_token" value="<?=csrf_token()?>"><label class="full">Question<textarea name="question"><?=e($q['question_text'])?></textarea></label><?php foreach (['a','b','c','d'] as $x):?><label>Option <?=strtoupper($x)?><input name="<?=$x?>" value="<?=e($q['option_'.$x])?>"></label><?php endforeach;?><label>Correct<select name="correct"><?php foreach (['A','B','C','D'] as $x):?><option <?=$q['correct_option'] === $x ? 'selected' : ''?>><?=$x?></option><?php endforeach;?></select></label><label>Marks<input name="marks" type="number" min="1" value="<?=e($q['marks'])?>"></label><button class="full">Save question</button></form><?php page_footer(); ?>

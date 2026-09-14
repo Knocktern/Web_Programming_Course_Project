@@ -1,7 +1,8 @@
 <?php
 require_once __DIR__ . '/../includes/bootstrap.php';
-if (current_user())
+if (current_user()) {
     redirect(dashboard_path(current_user()['role']));
+}
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf();
