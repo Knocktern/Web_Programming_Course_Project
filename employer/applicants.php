@@ -34,6 +34,7 @@ page_header('Applicants');
 ?>
 
 <h1>Applicants: <?= e($job['title']) ?></h1>
+<p><a href="quiz-builder.php?job_id=<?= $id ?>">Edit this job's quiz</a></p>
 
 <table>
     <tr>
