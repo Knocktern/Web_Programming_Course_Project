@@ -50,17 +50,17 @@ page_header('Create account'); ?>
     <div class="notice error"><?= e($error) ?></div><?php endforeach; ?>
 <form method="post" class="form-grid"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
     <div><label for="role">I am a</label><select id="role" name="role" required>
-            <option value="seeker">Job seeker</option>
-            <option value="employer">Employer / company</option>
+            <option value="seeker" <?= posted('role') === 'seeker' ? 'selected' : '' ?>>Job seeker</option>
+            <option value="employer" <?= posted('role') === 'employer' ? 'selected' : '' ?>>Employer / company</option>
         </select></div>
     <div><label for="name">Full name / company name</label><input id="name" name="name"
             value="<?= e($_POST['name'] ?? '') ?>" required></div>
     <div id="employer-contact-field" hidden><label for="contact_name">Employer contact name</label><input
-            id="contact_name" name="contact_name"></div>
+            id="contact_name" name="contact_name" value="<?= e(posted('contact_name')) ?>"></div>
     <div><label for="email">Email</label><input id="email" type="email" name="email"
             value="<?= e($_POST['email'] ?? '') ?>" required></div>
-    <div><label for="password">Password</label><input id="password" type="password" name="password" minlength="8"
-            required></div>
+    <div><label for="password">Password</label><input id="password" type="password" name="password" minlength="8" autocomplete="new-password"
+            aria-describedby="password-hint" required><small class="meta" id="password-hint">Use at least 8 characters.</small></div>
     <div class="full"><button>Create account</button> Already registered? <a href="login.php">Login</a></div>
 </form>
 <script>

@@ -6,17 +6,17 @@ page_header('Find your next opportunity'); ?>
 .hero {
     text-align: center;
     margin: 0 auto;
-    padding: 8rem 1rem 6rem;
+    padding: 3.5rem 1rem 3rem;
     max-width: 900px;
     background: transparent !important;
 }
 .hero h1 {
-    font-size: clamp(3rem, 8vw, 5rem);
+    font-size: clamp(2.25rem, 5vw, 3.5rem);
     margin-top: 1.5rem;
 }
 .hero .lead {
     margin: 0 auto 2.5rem;
-    font-size: 1.25rem;
+    font-size: 1.05rem;
     color: var(--slate);
     max-width: 600px;
 }
@@ -27,15 +27,15 @@ page_header('Find your next opportunity'); ?>
     flex-wrap: wrap;
 }
 .features-section {
-    padding: 6rem 0;
+    padding: 2rem 0;
     margin-top: 2rem;
 }
 .section-title {
     text-align: center;
-    margin-bottom: 4rem;
+    margin-bottom: 2rem;
 }
 .feature-card {
-    padding: 3rem 2rem;
+    padding: 1.5rem;
     background: #fff;
     border: 1px solid var(--line);
     border-radius: 24px;
@@ -64,7 +64,7 @@ page_header('Find your next opportunity'); ?>
 }
 .feature-card h3 {
     margin: 0 0 1rem 0;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
 }
 .feature-card p {
     color: var(--slate);
@@ -75,14 +75,14 @@ page_header('Find your next opportunity'); ?>
     background: var(--ink);
     color: #fff;
     border-radius: 32px;
-    padding: 6rem 2rem;
+    padding: 3rem 1.5rem;
     text-align: center;
-    margin: 6rem 0 2rem;
+    margin: 3rem 0 2rem;
 }
 .cta-section h2 {
     color: #fff;
     margin-top: 0;
-    font-size: 2.5rem;
+    font-size: clamp(1.5rem, 3vw, 2rem);
 }
 .cta-section .lead {
     color: rgba(255, 255, 255, 0.7);
@@ -151,7 +151,7 @@ page_header('Find your next opportunity'); ?>
 
 <section class="cta-section">
     <h2>Ready to take the next step?</h2>
-    <p class="lead" style="margin: 0 auto 2.5rem; max-width: 600px;">Join thousands of professionals and top companies using SkillGate to find the perfect match.</p>
+    <p class="lead" style="margin: 0 auto 2rem; max-width: 600px;">Build your profile, practise your skills, and take the next step toward your career.</p>
     <div class="hero-buttons">
         <?php if (!current_user()): ?>
             <a class="button" href="register.php">Get Started for Free</a>

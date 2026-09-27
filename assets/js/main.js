@@ -4,30 +4,20 @@ document.querySelectorAll('[data-confirm]').forEach((element) => {
     });
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        document.querySelectorAll('.notice').forEach((notice) => {
-            notice.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            notice.style.opacity = '0';
-            notice.style.transform = 'translateY(-10px)';
-            setTimeout(() => notice.remove(), 500);
-        });
-    }, 6000);
+// Keep messages and instructions visible until the user leaves the page.
+// Give wide report tables their own scroll area on smaller screens.
+document.querySelectorAll('main table').forEach((table) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'table-scroll';
+    wrapper.tabIndex = 0;
+    wrapper.setAttribute('role', 'region');
+    wrapper.setAttribute('aria-label', 'Scrollable table');
+    table.before(wrapper);
+    wrapper.append(table);
 });
 
-let lastScrollTop = 0;
-window.addEventListener('scroll', () => {
-    const header = document.querySelector('.site-header');
-    if (!header) return;
-    
-    let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-    
-    if (currentScroll > lastScrollTop && currentScroll > 80) {
-        // Scroll Down
-        header.classList.add('header-hidden');
-    } else {
-        // Scroll Up
-        header.classList.remove('header-hidden');
+document.querySelectorAll('.site-header nav a').forEach((link) => {
+    if (new URL(link.href).pathname === window.location.pathname) {
+        link.setAttribute('aria-current', 'page');
     }
-    lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
-}, { passive: true });
+});

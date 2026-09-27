@@ -18,11 +18,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $error = 'Invalid email, password, or inactive account.';
 }
 page_header('Login'); ?>
+<section class="auth-panel">
 <h1>Welcome back</h1><?php if ($error): ?>
     <div class="notice error"><?= e($error) ?></div><?php endif; ?>
 <form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-    <p><label for="email">Email</label><input id="email" type="email" name="email" required></p>
-    <p><label for="password">Password</label><input id="password" type="password" name="password" required></p>
+    <p><label for="email">Email</label><input id="email" type="email" name="email" autocomplete="email" value="<?= e(posted('email')) ?>" required></p>
+    <p><label for="password">Password</label><input id="password" type="password" name="password" autocomplete="current-password" required></p>
     <button>Login</button>
 </form>
+<p>New to SkillGate? <a class="text-link" href="register.php">Create an account</a></p>
+</section>
 <?php page_footer(); ?>

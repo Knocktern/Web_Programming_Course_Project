@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../includes/bootstrap.php';
 $user = require_login('seeker');
 $pdo = database();
+require_once __DIR__ . '/../includes/interview-details.php';
 
 // Profile info
 $s = $pdo->prepare('SELECT js.*, u.email FROM job_seekers js JOIN users u ON u.id=js.user_id WHERE js.user_id=?');
@@ -22,9 +23,14 @@ $skills->execute([$user['id']]);
 $skillList = $skills->fetchAll();
 
 // Recent applications
-$recent = $pdo->prepare('SELECT a.status,a.applied_at,j.title FROM applications a JOIN jobs j ON j.id=a.job_id WHERE a.seeker_id=? ORDER BY a.applied_at DESC LIMIT 5');
+$recent = $pdo->prepare('SELECT a.id,a.status,a.applied_at,j.title FROM applications a JOIN jobs j ON j.id=a.job_id WHERE a.seeker_id=? ORDER BY a.applied_at DESC LIMIT 5');
 $recent->execute([$user['id']]);
 $recentApps = $recent->fetchAll();
+
+// Keep scheduled interviews visible, even when the application is older.
+$interviews = $pdo->prepare("SELECT a.*,j.title,e.company_name FROM applications a JOIN jobs j ON j.id=a.job_id JOIN employers e ON e.user_id=j.employer_id WHERE a.seeker_id=? AND a.status='interview' ORDER BY a.interview_at IS NULL, a.interview_at DESC");
+$interviews->execute([$user['id']]);
+$interviewList = $interviews->fetchAll();
 
 // Recent quizzes
 $quizzes = $pdo->prepare('SELECT qa.percentage,qa.passed,qa.attempted_at,j.title,j.id job_id FROM quiz_attempts qa JOIN jobs j ON j.id=qa.job_id WHERE qa.seeker_id=? ORDER BY qa.attempted_at DESC LIMIT 5');
@@ -33,6 +39,22 @@ $quizList = $quizzes->fetchAll();
 
 page_header('Seeker dashboard'); ?>
 <h1>Welcome, <?= e($profile['full_name']) ?></h1>
+
+<?php if ($interviewList): ?>
+<section aria-labelledby="interviews-title">
+    <div class="page-heading"><h2 id="interviews-title">Your interviews</h2><a class="text-link" href="applications.php">View all applications</a></div>
+    <div class="grid interview-grid">
+        <?php foreach ($interviewList as $interview): ?>
+            <article class="card interview-card">
+                <span class="badge badge-interview">Interview</span>
+                <h3><?= e($interview['title']) ?></h3><p class="meta"><?= e($interview['company_name']) ?></p>
+                <?php interview_details($interview); ?>
+                <p><a class="text-link" href="applications.php#application-<?= (int) $interview['id'] ?>">View application</a></p>
+            </article>
+        <?php endforeach; ?>
+    </div>
+</section>
+<?php endif; ?>
 
 <article class="card">
     <h2>Your profile</h2>
@@ -67,7 +89,7 @@ page_header('Seeker dashboard'); ?>
     <tr><th>Job</th><th>Status</th><th>Date</th></tr>
     <?php foreach ($recentApps as $item): ?>
     <tr>
-        <td><?= e($item['title']) ?></td>
+        <td><a class="text-link" href="applications.php#application-<?= (int) $item['id'] ?>"><?= e($item['title']) ?></a></td>
         <td><?= status_badge($item['status']) ?></td>
         <td><?= e($item['applied_at']) ?></td>
     </tr>

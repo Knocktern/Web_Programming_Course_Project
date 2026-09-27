@@ -51,3 +51,9 @@ function is_valid_youtube_id(string $id): bool
 {
     return (bool) preg_match('/^[A-Za-z0-9_-]{11}$/', $id);
 }
+
+function is_http_url(string $url): bool
+{
+    return filter_var($url, FILTER_VALIDATE_URL) !== false
+        && in_array(strtolower((string) parse_url($url, PHP_URL_SCHEME)), ['http', 'https'], true);
+}
