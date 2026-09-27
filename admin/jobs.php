@@ -16,6 +16,6 @@ page_header('Moderate jobs');
 ?>
 <h1>Job moderation</h1>
 <table><tr><th>Role</th><th>Company</th><th>Category</th><th>Status</th><th>Moderate</th></tr>
-<?php foreach ($jobs as $job): ?><tr><td><?= e($job['title']) ?></td><td><?= e($job['company_name']) ?></td><td><?= e($job['category_name']) ?></td><td><?= status_label($job['status']) ?></td><td><form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden" name="job_id" value="<?= $job['id'] ?>"><select name="status"><option value="active">Active</option><option value="closed">Closed</option><option value="deactivated">Deactivated</option></select><button class="small">Save</button></form></td></tr><?php endforeach; ?>
+<?php foreach ($jobs as $job): ?><tr><td><?= e($job['title']) ?></td><td><?= e($job['company_name']) ?></td><td><?= e($job['category_name']) ?></td><td><?= status_badge($job['status']) ?></td><td><form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden" name="job_id" value="<?= $job['id'] ?>"><select name="status"><option value="active">Active</option><option value="closed">Closed</option><option value="deactivated">Deactivated</option></select><button class="small">Save</button></form></td></tr><?php endforeach; ?>
 </table>
 <?php page_footer(); ?>

@@ -6,8 +6,9 @@ $pdo = database();
 $job = $pdo->prepare("SELECT id,title,minimum_passing_score FROM jobs WHERE id=? AND status='active'");
 $job->execute([$jobId]);
 $job = $job->fetch();
-if (!$job)
+if (!$job) {
     exit('Quiz is unavailable.');
+}
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf();
     $q = $pdo->prepare('SELECT id,correct_option,marks FROM quiz_questions WHERE job_id=?');
@@ -21,8 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $score = 0;
     foreach ($questions as $item) {
         $total += (float) $item['marks'];
-        if (($_POST['answer'][$item['id']] ?? '') === $item['correct_option'])
+        if (($_POST['answer'][$item['id']] ?? '') === $item['correct_option']) {
             $score += (float) $item['marks'];
+        }
     }
     $percentage = round($score / $total * 100, 2);
     $passed = $percentage >= (float) $job['minimum_passing_score'];

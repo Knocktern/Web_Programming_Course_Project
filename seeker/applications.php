@@ -23,8 +23,9 @@ if ($jobId) {
     $s = $pdo->prepare("SELECT title FROM jobs WHERE id=? AND status='active'");
     $s->execute([$jobId]);
     $job = $s->fetch();
-    if (!$job)
+    if (!$job) {
         exit('Job not found.');
+    }
     page_header('Apply'); ?>
     <h1>Apply for <?= e($job['title']) ?></h1>
     <form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden" name="job_id"
@@ -48,7 +49,7 @@ page_header('My applications'); ?>
         <tr>
             <td><?= e($a['title']) ?></td>
             <td><?= e($a['company_name']) ?></td>
-            <td><?= status_label($a['status']) ?></td>
+            <td><?= status_badge($a['status']) ?></td>
             <td><?= e($a['applied_at']) ?></td>
         </tr><?php endforeach; ?>
 </table><?php page_footer(); ?>
