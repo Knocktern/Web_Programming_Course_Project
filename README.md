@@ -57,6 +57,7 @@ All seeded accounts use password `DemoPass123!`.
 - Server-filtered job search by title, category, location, employment type, and required skill badges such as C++, Python, and JavaScript.
 - Seeker profile and CV content management, preview, removal, and browser print-to-PDF.
 - Direct job quiz questions. Correct answers never render to the browser; PHP calculates and stores results.
+- Quiz caution and explicit Start button. After starting, hiding the quiz tab automatically submits current answers; unanswered questions score zero. This is a simple JavaScript deterrent, not guaranteed cheating prevention.
 - Application submission verifies a passing attempt for the same job and seeker.
 - Failed quizzes recommend active courses linked to the job category.
 - Course pages contain validated YouTube video IDs and manual completion tracking.
@@ -132,6 +133,8 @@ The implementation uses the existing `applications` columns and one shared PHP d
 Interview times use the PHP server timezone, shown beside the date and on the scheduling form. Keep the server timezone consistent with the timezone used when scheduling interviews.
 
 ### Checks
+
+For the quiz visibility feature, switch tabs before clicking Start to confirm no submission occurs. Then start a demo quiz, answer one question, and switch tabs: returning should show the result and auto-submission notice. Also check an unanswered quiz and normal manual submission. This feature needs JavaScript and a working connection; it does not detect another device, prevent modified browser code, or guarantee submission after an abrupt browser shutdown. Existing retakes remain available. No database migration is needed.
 
 `php tests/interview-flow.php` checks online/office saves, invalid input, seeker visibility, candidate instructions, safe meeting links, and the status-to-scheduling flow. It requires a configured local database with at least one application. It runs each case in a transaction and rolls back its changes, preserving existing application data.
 

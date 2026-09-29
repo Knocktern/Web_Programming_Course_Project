@@ -78,27 +78,38 @@ page_header('Applicant profile');
 </div>
 
 <h2 id="schedule-interview"><?= !empty($application['interview_at']) ? 'Update interview' : 'Schedule interview' ?></h2>
-<p class="meta">The candidate will see these details on their dashboard and in My applications. Times use <?= e(date_default_timezone_get()) ?>.</p>
+<p class="meta">The candidate will see these details on their dashboard and in My applications. Times use
+    <?= e(date_default_timezone_get()) ?>.</p>
 <?php foreach ($errors as $error): ?>
     <div class="notice error"><?= e($error) ?></div><?php endforeach; ?>
 <?php if (!empty($application['interview_at'])): ?>
-    <section class="card interview-card"><h3>Current interview details</h3><?php interview_details($application); ?></section>
+    <section class="card interview-card">
+        <h3>Current interview details</h3><?php interview_details($application); ?>
+    </section>
 <?php endif; ?>
 <form method="post" class="form-grid" id="interview-form">
     <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
     <input type="hidden" name="application_id" value="<?= $applicationId ?>">
     <label>Interview type<select name="interview_mode" id="interview-mode">
-            <option value="online" <?= ($form['interview_mode'] ?? '') === 'online' ? 'selected' : '' ?>>Online meeting</option>
-            <option value="office" <?= ($form['interview_mode'] ?? '') === 'office' ? 'selected' : '' ?>>Office interview</option>
+            <option value="online" <?= ($form['interview_mode'] ?? '') === 'online' ? 'selected' : '' ?>>Online meeting
+            </option>
+            <option value="office" <?= ($form['interview_mode'] ?? '') === 'office' ? 'selected' : '' ?>>Office interview
+            </option>
         </select></label>
-    <label>Date and time<input type="datetime-local" name="interview_at" value="<?= e($_SERVER['REQUEST_METHOD'] === 'POST' ? $form['interview_at'] : (!empty($form['interview_at']) ? date('Y-m-d\TH:i', strtotime($form['interview_at'])) : '')) ?>" required></label>
+    <label>Date and time<input type="datetime-local" name="interview_at"
+            value="<?= e($_SERVER['REQUEST_METHOD'] === 'POST' ? $form['interview_at'] : (!empty($form['interview_at']) ? date('Y-m-d\TH:i', strtotime($form['interview_at'])) : '')) ?>"
+            required></label>
     <label id="meeting-url-field">Meeting URL<input type="url" name="meeting_url"
-            value="<?= e($form['meeting_url'] ?? '') ?>" maxlength="500" placeholder="https://meet.google.com/..."></label>
+            value="<?= e($form['meeting_url'] ?? '') ?>" maxlength="500"
+            placeholder="https://meet.google.com/..."></label>
     <label id="office-location-field">Office location<input name="interview_location"
-            value="<?= e($form['interview_location'] ?? '') ?>" maxlength="255" placeholder="Building, street, city, floor and room"></label>
+            value="<?= e($form['interview_location'] ?? '') ?>" maxlength="255"
+            placeholder="Building, street, city, floor and room"></label>
     <label class="full">Notes<textarea name="interview_notes"
             placeholder="What to bring, arrival instructions, or meeting passcode"><?= e($form['interview_notes'] ?? '') ?></textarea></label>
-    <div class="full"><button><?= !empty($application['interview_at']) ? 'Save interview changes' : 'Schedule interview' ?></button></div>
+    <div class="full">
+        <button><?= !empty($application['interview_at']) ? 'Save interview changes' : 'Schedule interview' ?></button>
+    </div>
 </form>
 <script>
     const mode = document.getElementById('interview-mode');

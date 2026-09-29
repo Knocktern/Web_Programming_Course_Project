@@ -26,7 +26,7 @@
 
 ## How to study this guide
 
-This is a teaching snapshot of the code on 27 September 2026, not a claim about who originally wrote it. Replace Member 1–4 with your names. Start with the concepts, trace one complete request, then study each assigned file in source order. Source chunks include every line of the assigned runtime files; their headings give the original line ranges. Blank lines and closing braces delimit blocks rather than introducing new behavior. Some existing templates put many statements on one line: read the explanation and the attribute glossary before following that long line.
+This is a teaching snapshot of the code on 27 September 2026, with the quiz visibility feature updated on 29 September 2026, not a claim about who originally wrote it. Replace Member 1–4 with your names. Start with the concepts, trace one complete request, then study each assigned file in source order. Source chunks include every line of the assigned runtime files; their headings give the original line ranges. Blank lines and closing braces delimit blocks rather than introducing new behavior. Some existing templates put many statements on one line: read the explanation and the attribute glossary before following that long line.
 
 For each chunk, answer: **What input enters? Which condition runs? What changes in memory/database? What output or redirect leaves? Who is allowed to do this?** Read the actual source alongside the guide if the project has changed since this snapshot. Source hashes identify the version explained. Configuration secrets are deliberately excluded; the example configuration teaches the same structure.
 
@@ -71,7 +71,7 @@ flowchart TD
 | PDO with pdo_mysql | PHP-to-MySQL connection and parameterized SQL; no ORM |
 | HTML5 | Semantic content, links, GET/POST forms, native details/summary disclosure, client validation |
 | CSS3 | Custom layout, responsive grid/flex, badges, focus, printing, reduced motion; no Bootstrap/Tailwind |
-| Vanilla JavaScript | Small DOM enhancements and field visibility; no React, jQuery, Node build step, or AJAX search |
+| Vanilla JavaScript | DOM enhancements, field visibility, and quiz tab-hidden auto-submission after Start; no React, jQuery, Node build step, or AJAX search |
 | PHP sessions | Browser has a session identifier cookie; authenticated user ID, CSRF token, and flashes live in server session state |
 | Apache/XAMPP or PHP built-in server | Executes PHP and serves assets; the development server command is `php -S localhost:8000` from the root |
 | Fontshare / Google Fonts | External font/icon stylesheets requested by the shared header; fonts fall back when unavailable |
@@ -214,6 +214,8 @@ Use the session for acting-user identity. Use role checks before protected actio
 Read `+=` as add-and-assign, `[] =` as append, and `condition ? a : b` as choose one result. A single-line if controls only its following statement. A variable can be reused for different values: quiz.php changes `$job` from a prepared statement to the fetched row, and many `$s` variables are reused for new statements. This is legal procedural PHP but requires following assignment order carefully.
 
 ### What is actually implemented, and what is not
+
+Quiz tab visibility: after the caution is acknowledged with Start, a hidden quiz tab triggers submission of current answers. This uses inline JavaScript in `seeker/quiz.php` (Member 2); PHP still scores the attempt. It is a client-side deterrent, not guaranteed cheating prevention or server-enforced attempt locking. No database change is required. See Member 2’s updated quiz walkthrough for the full code and limitations.
 
 The quiz is scored by PHP using current database answers. Failed attempts suggest courses by **job category**, not AI or a semantic skill-matching model. Completion is self-reported with a button, not verified watching. Passing any previous attempt for the same job permits applying; there is no implemented maximum-attempt lock. Database defaults/constraints and browser validation cover some cases, but server validation is uneven. Application POST does not independently recheck the job deadline/current active status. Some broad PDO exception handlers label every database error as a duplicate. Those are current limitations to explain honestly, not features to claim.
 
@@ -996,9 +998,9 @@ For each section, bind current user ID and fetch rows. Skip empty sections. Nest
 
 ## File: seeker/quiz.php
 
-**Responsibility:** Server-scored preliminary screening with stored attempts and answers.
+**Responsibility:** Server-scored screening with a pre-start caution and automatic submission when the active quiz tab becomes hidden. Updated 29 September 2026.
 
-**Source:** [seeker/quiz.php](../../seeker/quiz.php) · **SHA-256 snapshot prefix:** `58a4e8b5e920`
+**Source:** [seeker/quiz.php](../../seeker/quiz.php) · **SHA-256 snapshot prefix:** `f87356dacbc4`
 
 ### Authorize and load job — source lines 1–11
 
@@ -1051,9 +1053,9 @@ Initialize total/score to zero. Every stored question contributes possible marks
     $passed = $percentage >= (float) $job['minimum_passing_score'];
 ```
 
-### Persist attempt and answers — source lines 31–43
+### Persist attempt, answers, and auto-submit feedback — source lines 31–46
 
-Start transaction, insert parent attempt, get new ID, prepare child INSERT once. Loop questions again, store answer only if A-D, Boolean correctness as integer, and correct marks or zero. Commit then redirect to result ID. Foreign keys tie answer job/question/attempt together. No explicit try/catch is present here, and no attempt-limit logic runs.
+The existing transaction saves the attempt and every answer, including missing answers as NULL with zero marks. After commit, submission_reason=tab_hidden adds an explanatory flash before redirecting to the result page. The reason is client-supplied display metadata, not trusted proof of cheating, and is not stored in a new database column. Scores still come from PHP and database answer keys.
 
 ```php
     $pdo->beginTransaction();
@@ -1067,13 +1069,16 @@ Start transaction, insert parent attempt, get new ID, prepare child INSERT once.
         $a->execute([$attempt, $jobId, $item['id'], in_array($answer, ['A', 'B', 'C', 'D'], true) ? $answer : null, (int) $correct, $correct ? $item['marks'] : 0]);
     }
     $pdo->commit();
+    if (posted('submission_reason') === 'tab_hidden') {
+        flash('error', 'Your quiz was automatically submitted because the quiz tab became hidden. Unanswered questions received zero marks.');
+    }
     redirect('quiz-result.php?id=' . $attempt);
 }
 ```
 
-### Safe GET quiz form — source lines 44–60
+### Load questions and handle an empty quiz — source lines 47–57
 
-GET query selects question text/options/marks and deliberately excludes correct_option. The form names each radio group answer[question-ID], so PHP receives a nested array. All four letters for the same question share a name; required prompts one selection. Fieldset/legend groups the question. No hidden field contains the correct answer.
+GET selects question text/options/marks without correct_option. Render the title and threshold. When there are no questions, show a notice instead of a start button or quiz script; this also prevents trying to focus a nonexistent radio input.
 
 ```php
 $s = $pdo->prepare('SELECT id,question_text,option_a,option_b,option_c,option_d,marks FROM quiz_questions WHERE job_id=? ORDER BY display_order');
@@ -1084,7 +1089,33 @@ page_header('Preliminary quiz'); ?>
 <p class="lead">Pass score: <?= e($job['minimum_passing_score']) ?>%. Your score is calculated securely after
     submission.
 </p>
-<form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden"
+<?php if (!$questions): ?>
+    <p class="notice">This job has no quiz questions yet. Please check again later.</p>
+<?php else: ?>
+```
+
+### Caution before starting — source lines 58–65
+
+The caution names the consequences of switching tabs, minimizing the browser, or switching apps when the browser marks this document hidden. The user explicitly chooses I understand — start quiz. type=button avoids accidental form submission. The button starts disabled and is enabled by the script. noscript explains why JavaScript is required in the normal UI. The active reminder starts hidden.
+
+```php
+<section class="card" id="quiz-caution" aria-labelledby="quiz-caution-title">
+    <h2 id="quiz-caution-title">Before you start</h2>
+    <p>Once you start, stay on this quiz tab. Switching to another tab, minimizing the browser, or switching apps when it hides this page will automatically submit your current answers.</p>
+    <p>Unanswered questions will receive zero marks. Only start when you are ready to finish without leaving this tab.</p>
+    <button type="button" id="start-quiz" disabled>I understand — start quiz</button>
+    <noscript><p class="notice error">Enable JavaScript to start this quiz.</p></noscript>
+</section>
+<p class="notice" id="quiz-active-notice" hidden>Quiz in progress. Keep this tab visible to avoid automatic submission.</p>
+```
+
+### Initially hidden form — source lines 66–75
+
+The form is hidden until start. It still exists in the DOM; this is a simple UI gate, not secure question delivery. CSRF and job_id retain their existing purpose. New submission_reason starts manual and will change to tab_hidden only on automatic submission. Radio inputs remain required for normal manual submission. Their answer[question-ID] names form the nested PHP answer map.
+
+```php
+<form method="post" id="quiz-form" hidden><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden"
+        name="submission_reason" id="submission-reason" value="manual"><input type="hidden"
         name="job_id" value="<?= $jobId ?>"><?php foreach ($questions as $number => $q): ?>
         <fieldset>
             <legend><?= ($number + 1) . '. ' . e($q['question_text']) ?> (<?= e($q['marks']) ?> mark)</legend>
@@ -1092,8 +1123,76 @@ page_header('Preliminary quiz'); ?>
                         type="radio" name="answer[<?= $q['id'] ?>]" value="<?= $letter ?>" required> <?= $letter ?>.
                     <?= e($q[$field]) ?></label><?php endforeach; ?>
         </fieldset><br><?php endforeach; ?><button>Submit quiz</button>
-</form><?php page_footer(); ?>
+</form>
 ```
+
+### Start and focus the quiz — source lines 76–90
+
+getElementById finds controls. let quizStarted and quizSubmitted are in-memory Boolean flags for this loaded page. Enable the start control once handlers can run. Its click callback refuses to start in a hidden document or start twice, then hides the caution, shows the reminder/form and focuses the first answer. Switching tabs before this click does not submit anything.
+
+```php
+<script>
+    const quizForm = document.getElementById('quiz-form');
+    const startButton = document.getElementById('start-quiz');
+    let quizStarted = false;
+    let quizSubmitted = false;
+
+    startButton.disabled = false;
+    startButton.addEventListener('click', () => {
+        if (document.hidden || quizStarted) return;
+        quizStarted = true;
+        document.getElementById('quiz-caution').hidden = true;
+        document.getElementById('quiz-active-notice').hidden = false;
+        quizForm.hidden = false;
+        quizForm.querySelector('input[type="radio"]').focus();
+    });
+```
+
+### Normal-submit duplicate guard — source lines 91–98
+
+The submit event runs for a normal valid browser submission. If a submission already began, preventDefault stops another; otherwise mark it started. Native required validation still runs before this event for the manual button. An incomplete manual click therefore does not set quizSubmitted and does not disable later hidden-tab detection.
+
+```php
+
+    quizForm.addEventListener('submit', (event) => {
+        if (quizSubmitted) {
+            event.preventDefault();
+            return;
+        }
+        quizSubmitted = true;
+    });
+```
+
+### Visibility-triggered submission — source lines 99–109
+
+visibilitychange fires when the document visibility changes. document.hidden is the browser-provided Boolean. Return unless the quiz started, no submission has begun, and the page is now hidden. Set the guard first, set the reason, and call quizForm.submit(). This direct method intentionally bypasses required-field checks and the submit event, allowing unanswered questions to be sent. The normal PHP endpoint verifies CSRF and scores the answers. Repeated visibility events cannot submit twice from this page. Close the script, conditional, and shared layout.
+
+```php
+
+    document.addEventListener('visibilitychange', () => {
+        if (!quizStarted || quizSubmitted || !document.hidden) return;
+        quizSubmitted = true;
+        document.getElementById('submission-reason').value = 'tab_hidden';
+        // Bypass required radio validation so incomplete answers are submitted too.
+        quizForm.submit();
+    });
+</script>
+<?php endif; ?>
+<?php page_footer(); ?>
+```
+
+### Tab-switch workflow and viva explanation
+
+Warning → user clicks Start → questions appear → browser marks the tab hidden → visibilitychange handler posts the current answers → PHP scores unanswered questions as zero → result page shows the automatic-submission notice.
+
+- **Why visibilitychange rather than blur?** A blur can happen for browser chrome or other focus changes without actually hiding the tab. This feature targets document visibility; it does not monitor every loss of focus or split-screen activity.
+- **Why form.submit()?** requestSubmit() would run required-field validation and could block an incomplete exam. Direct submit sends checked answers and hidden fields immediately without those client checks. Unchecked radio groups are omitted and the existing PHP scorer handles that.
+- **What prevents repeated submissions?** A local quizSubmitted flag guards automatic events and normal form submission. It is not server-side idempotency or a lock against retries from a separate page/request.
+- **Can it guarantee no cheating?** No. JavaScript can be disabled or modified, hidden questions are already in the DOM, another device is undetectable, and a page may remain visible in split-screen. Network loss, abrupt browser termination, or OS suspension may prevent a request from completing. This is a simple deterrent, not proctoring or guaranteed delivery.
+- **Does it ban another attempt?** No. Existing retake behavior is unchanged. The submission reason only controls feedback; it is not a persisted violation record or score penalty beyond unanswered questions earning zero.
+- **Who owns this change?** Member 2 owns the inline script in seeker/quiz.php. Member 1 should understand its UI/accessibility interaction, Member 3 still authors the questions, and Member 4 needs no schema migration.
+
+**Manual rehearsal:** first switch tabs while the warning is showing (nothing submits); start, answer one question and switch tabs (result after return); repeat with no answers (zero score); complete and manually submit (normal result); confirm a missing-answer manual click keeps the quiz active. Use disposable demo attempts for rehearsal. The JavaScript checks used a small mocked DOM; they do not replace a real browser check of visibility events or networking.
 
 ## File: seeker/quiz-result.php
 

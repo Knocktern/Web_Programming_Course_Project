@@ -39,6 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $a->execute([$attempt, $jobId, $item['id'], in_array($answer, ['A', 'B', 'C', 'D'], true) ? $answer : null, (int) $correct, $correct ? $item['marks'] : 0]);
     }
     $pdo->commit();
+    if (posted('submission_reason') === 'tab_hidden') {
+        flash('error', 'Your quiz was automatically submitted because the quiz tab became hidden. Unanswered questions received zero marks.');
+    }
     redirect('quiz-result.php?id=' . $attempt);
 }
 $s = $pdo->prepare('SELECT id,question_text,option_a,option_b,option_c,option_d,marks FROM quiz_questions WHERE job_id=? ORDER BY display_order');
@@ -49,7 +52,19 @@ page_header('Preliminary quiz'); ?>
 <p class="lead">Pass score: <?= e($job['minimum_passing_score']) ?>%. Your score is calculated securely after
     submission.
 </p>
-<form method="post"><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden"
+<?php if (!$questions): ?>
+    <p class="notice">This job has no quiz questions yet. Please check again later.</p>
+<?php else: ?>
+<section class="card" id="quiz-caution" aria-labelledby="quiz-caution-title">
+    <h2 id="quiz-caution-title">Before you start</h2>
+    <p>Once you start, stay on this quiz tab. Switching to another tab, minimizing the browser, or switching apps when it hides this page will automatically submit your current answers.</p>
+    <p>Unanswered questions will receive zero marks. Only start when you are ready to finish without leaving this tab.</p>
+    <button type="button" id="start-quiz" disabled>I understand — start quiz</button>
+    <noscript><p class="notice error">Enable JavaScript to start this quiz.</p></noscript>
+</section>
+<p class="notice" id="quiz-active-notice" hidden>Quiz in progress. Keep this tab visible to avoid automatic submission.</p>
+<form method="post" id="quiz-form" hidden><input type="hidden" name="csrf_token" value="<?= csrf_token() ?>"><input type="hidden"
+        name="submission_reason" id="submission-reason" value="manual"><input type="hidden"
         name="job_id" value="<?= $jobId ?>"><?php foreach ($questions as $number => $q): ?>
         <fieldset>
             <legend><?= ($number + 1) . '. ' . e($q['question_text']) ?> (<?= e($q['marks']) ?> mark)</legend>
@@ -57,4 +72,38 @@ page_header('Preliminary quiz'); ?>
                         type="radio" name="answer[<?= $q['id'] ?>]" value="<?= $letter ?>" required> <?= $letter ?>.
                     <?= e($q[$field]) ?></label><?php endforeach; ?>
         </fieldset><br><?php endforeach; ?><button>Submit quiz</button>
-</form><?php page_footer(); ?>
+</form>
+<script>
+    const quizForm = document.getElementById('quiz-form');
+    const startButton = document.getElementById('start-quiz');
+    let quizStarted = false;
+    let quizSubmitted = false;
+
+    startButton.disabled = false;
+    startButton.addEventListener('click', () => {
+        if (document.hidden || quizStarted) return;
+        quizStarted = true;
+        document.getElementById('quiz-caution').hidden = true;
+        document.getElementById('quiz-active-notice').hidden = false;
+        quizForm.hidden = false;
+        quizForm.querySelector('input[type="radio"]').focus();
+    });
+
+    quizForm.addEventListener('submit', (event) => {
+        if (quizSubmitted) {
+            event.preventDefault();
+            return;
+        }
+        quizSubmitted = true;
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (!quizStarted || quizSubmitted || !document.hidden) return;
+        quizSubmitted = true;
+        document.getElementById('submission-reason').value = 'tab_hidden';
+        // Bypass required radio validation so incomplete answers are submitted too.
+        quizForm.submit();
+    });
+</script>
+<?php endif; ?>
+<?php page_footer(); ?>
